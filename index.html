@@ -534,6 +534,39 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 }
 /* phone landscape keeps its side-by-side layout: the button panel scrolls on its own */
 @media (orientation:landscape) and (max-height:560px){ #game.dense .scene,#game.dense2 .scene{min-height:110px} }
+/* v4 (portrait phones): buttons get most of the screen, customer window is a fixed smaller strip */
+@media (orientation:portrait) and (max-width:820px){
+  #game .leftCol{flex:none}
+  #game .scene{flex:none;min-height:0;height:clamp(140px,calc(var(--dvh,1vh)*25),330px)}
+  #game.dense .scene{height:clamp(130px,calc(var(--dvh,1vh)*22),300px)}
+  #game.dense2 .scene{height:clamp(120px,calc(var(--dvh,1vh)*19),260px)}
+  #game .slot{height:clamp(70px,calc(var(--dvh,1vh)*10),120px)}
+  #game.dense2 .slot{height:clamp(58px,calc(var(--dvh,1vh)*8.5),110px)}
+  #game.dense2 .grillWrap{padding:7px 8px 0}
+  #game.dense2 .grill{padding-top:6px;padding-bottom:5px}
+  #game.dense2 .scene{height:clamp(128px,calc(var(--dvh,1vh)*21),260px)}
+  #game.dense2 .ctrl .row.raw .tile svg{height:clamp(18px,calc(var(--dvh,1vh)*3),36px)}
+  #game .grillWrap{padding:9px 10px 2px}
+  #game .ctrl{flex:1;min-height:0}
+  #game .ctrl .row{flex:1 1 0;min-height:max-content;grid-auto-rows:1fr;align-items:stretch}
+  #game .ctrl .row.r3,#game .ctrl .row.r2{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column}
+  #game .ctrl .row>.tile{height:100%;min-height:0}
+  #game .ctrl #rowRaw{flex-grow:1.8}
+  #game .ctrl .prepRow{flex:none}
+  /* bigger, easier to read labels */
+  #game .row.raw .tile b{font-size:clamp(15px,4.6vw,22px)}
+  #game .row.raw .tile small{font-size:clamp(11.5px,3.4vw,16px)}
+  #game .row.raw .tile svg{height:clamp(30px,calc(var(--dvh,1vh)*5),52px)}
+  #game #rowSauce .tile b,#game #rowTop .tile b,#game #rowPack .tile b{font-size:clamp(14px,4.2vw,20px)}
+  #game #rowSauce .tile small,#game #rowTop .tile small,#game #rowPack .tile small{font-size:clamp(10.5px,3.1vw,15px)}
+  #game #rowSauce .tile .sw,#game #rowTop .tile .em,#game #rowPack .tile .em{width:26px;height:26px;font-size:23px;line-height:26px}
+  #game .ctrl.dense .row.raw .tile b{font-size:clamp(13px,3.9vw,19px)}
+  #game .ctrl.dense .row.raw .tile small{font-size:clamp(10.5px,3vw,14px)}
+  #game .ctrl.dense .row.raw .tile svg{height:clamp(22px,calc(var(--dvh,1vh)*3.6),40px)}
+  #game .ctrl.dense #rowSauce .tile b,#game .ctrl.dense #rowTop .tile b,#game .ctrl.dense #rowPack .tile b{font-size:clamp(12px,3.5vw,17px)}
+  #game .ctrl.dense #rowSauce .tile small,#game .ctrl.dense #rowTop .tile small,#game .ctrl.dense #rowPack .tile small{font-size:clamp(10px,2.8vw,13px)}
+  #game .ctrl.dense #rowSauce .tile .sw,#game .ctrl.dense #rowTop .tile .em,#game .ctrl.dense #rowPack .tile .em{width:20px;height:20px;font-size:18px;line-height:20px}
+}
 </style>
 </head>
 <body>
@@ -965,7 +998,7 @@ function saveMid(){
   const c=state.cust;
   save.mid={day:state.dayN, delta:state.cash-state.dayStartCash, served:state.served, log:state.log, revenue:state.revenue,
     tips:state.tips, costs:state.costs, missed:state.missed, fine:state.fine, slots:state.slots, pan:state.pan, tray:state.tray, spawnTimer:state.spawnTimer,
-    cust:c?{name:c.name,order:c.order,look:c.look,patience:c.patience,left:c.left,resv:c.resv,ask:c.ask,t:c.t,gov:c.gov,say:c.say}:null};
+    cust:c?{name:c.name,order:c.order,look:c.look,patience:c.patience,left:c.left,resv:c.resv,ask:c.ask,rush:c.rush,t:c.t,gov:c.gov,say:c.say}:null};
   writeSave();
 }
 
@@ -1449,6 +1482,9 @@ function renderRows(){
   $('rowTop').classList.toggle('r3', !pm); $('rowTop').classList.toggle('r2', pm);
   $('lblTop').textContent = pm ? '3 · Palamig' : '3 · Topping';
   $('lblTop').style.display = $('rowTop').style.display = (tk||pm)?'':'none';
+  if(pm && $('game').classList.contains('dense2')){   // lots unlocked: drinks share the Pack row to save a whole row
+    $('rowPack').insertAdjacentHTML('beforeend', $('rowTop').innerHTML); $('rowTop').innerHTML='';
+    $('lblTop').style.display = $('rowTop').style.display = 'none'; }
   $('lblPack').textContent = (tk||(save.up.palamig&&!tk))?'4 · Pack':'3 · Pack';
   $('grill').style.display = tk?'none':'';
   $('pan').style.display = tk?'':'none';
@@ -1489,7 +1525,7 @@ function updateBadges(){
 
 function newDay(){
   Object.assign(state,{cash:save.cash,dayStartCash:save.cash,dayN:save.day,served:0,log:[],slots:Array(grillSlots()).fill(null),
-    tray:{items:[],sauce:null,top:null,pack:null},pan:[],mode:'grill',cust:null,spawnTimer:.8,revenue:0,tips:0,costs:0,missed:0,fine:null,over:false,pauseLock:false});
+    tray:{items:[],sauce:null,top:null,pack:null},pan:[],mode:'grill',cust:null,spawnTimer:.8,revenue:0,tips:0,costs:0,missed:0,rushN:0,fine:null,over:false,pauseLock:false});
   if(!save.stockStart || save.stockStart.day!==save.day){ save.stockStart={day:save.day, lots:JSON.parse(JSON.stringify(save.stock)), supply:JSON.parse(JSON.stringify(save.supply))}; writeSave(); }
   state.tutorial = localStorage.getItem('ihaw_tut_done') ? 0 : 1;
 }
@@ -1612,15 +1648,29 @@ function spawnCustomer(){
   renderCustomer(tut);
   if(save.stand && !tut){ setMode(isT?'tako':'grill'); }
   if(!isT && !tut && invOn(d)){
-    if(availableSticks(product)===0){ soldOut(); return; }
     const miss=[order.sauce,order.pack].find(k=>SUP(k) && supLeft(k)<=0);
     if(miss){ soldOut(SUP(miss).name); return; }
+    const outK=[...new Set(orderItems(order).map(r=>r.k))].filter(k=>PRODUCTS[k] && availableSticks(k)===0);
+    if(outK.length){ state.cust.rush={ks:outK, price:outK.reduce((a,k)=>a+rushPrice(k),0)}; renderCustomer(false); return; }   // offer a rush buy
   }
   if(isT && !save.seen.tako){
     save.seen.tako=1; writeSave(); state.hintLock=true;
     coach('Takoyaki! 1) Tap Pour Batter. 2) When FLIP! shows, tap the ball. 3) Tap again when it is golden. 4) Add sauce, topping, pack, then SERVE.','Got it',()=>{ state.hintLock=false; coach(null); });
   }
   if(tut) tutorialStep(1);
+}
+/* rush buy: out of a food mid-day, so buy a pack on the spot at double the normal price (does not need a free storage slot) */
+const RUSH_MULT = 2;
+function rushPrice(k){ return Math.round(packCost(k)*RUSH_MULT); }
+function answerRush(yes){
+  const c=state.cust; if(!c || !c.rush || state.paused || state.over) return;
+  const R=c.rush, names=R.ks.map(k=>PRODUCTS[k].name).join(' & ');
+  if(!yes){ delete c.rush; soldOut(names); return; }
+  if(state.cash<R.price){ sfx.bad(); toast('Not enough cash','#ff5a6a',$('bubble')); return; }
+  R.ks.forEach(k=>{ const p=rushPrice(k); state.cash-=p; save.stockSpent=(save.stockSpent||0)+p; save.stock.push({k,left:PACK_SIZE,bought:save.day,paid:p,rush:1}); });
+  state.rushN=(state.rushN||0)+1; delete c.rush; sfx.buy();
+  floatText(`Rush stock -${peso(R.price)}`,'#ffc65c',$('scene'),50,40);
+  writeSave(); renderRows(); updateHud(); renderCustomer(false); saveMid();
 }
 function soldOut(why){                               // no stock of what they want: lost sale and a 1-star review
   const c=state.cust, o=c.order;
@@ -1642,7 +1692,12 @@ function renderCustomer(tut){
   const chips = `<div class="chips"><span class="chip"><i style="background:${SAUCE_ALL[o.sauce].color}"></i>${SAUCE_ALL[o.sauce].name}</span>
     ${o.top?`<span class="chip">${TOPS[o.top].em} ${TOPS[o.top].name}</span>`:''}
     <span class="chip">${PACK_ALL[o.pack].em} ${PACK_ALL[o.pack].name}</span>${o.drink?`<span class="chip" style="background:#d7f5e4">${DRINKS[o.drink].em} ${DRINKS[o.drink].name}</span>`:''}</div>`;
-  if(c.ask){
+  if(c.rush){
+    const R=c.rush, names=R.ks.map(k=>PRODUCTS[k].name).join(' & '), normal=R.ks.reduce((a,k)=>a+packCost(k),0), can=state.cash>=R.price;
+    $('bubble').innerHTML = `<div class="name">${CTYPES[c.t]?.em||''} ${c.name}</div>${c.say?`<div class="say">“${c.say}”</div>`:''}${wants}
+      <div class="say" style="font-style:normal;color:#b3261e">⚠️ You're out of ${names}! Rush-buy ${R.ks.length>1?'a pack of each':`a pack of ${PACK_SIZE}`} for <b>${peso(R.price)}</b> (normal ${peso(normal)})?</div>
+      <div class="askBtns"><button class="buy" ${can?'':'disabled'} onclick="answerRush(true)">${can?`🛒 Rush buy ${peso(R.price)}`:'Not enough cash'}</button><button class="buy no" onclick="answerRush(false)">Sorry, sold out</button></div>`;
+  } else if(c.ask){
     const A=c.ask;
     $('bubble').innerHTML = `<div class="name">${c.name} · 📅 Pre-order</div>
       <div class="say">“I'll come back on ${weekdayLong(A.day)} (Day ${A.day}). Can you have this ready?”</div>
@@ -1653,7 +1708,7 @@ function renderCustomer(tut){
       ${tut?'':'<div class="patience"><i id="patBar"></i></div>'}`;
   }
   const busy = c.ask || c.say || orderItems(o).length>1 || o.top || o.drink;   // lots to show: use the compact bubble
-  setTimeout(()=>{ if(state.cust) $('bubble').className='bubble'+(c.ask?' ask':busy?' cmp':''); },350);
+  setTimeout(()=>{ if(state.cust) $('bubble').className='bubble'+(c.ask||c.rush?' ask':busy?' cmp':''); },350);
 }
 function weekdayLong(d){ return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][(d-1)%7]; }
 function answerAsk(yes){
@@ -1837,6 +1892,7 @@ function serve(){
   if(!state.cust){ toast('No customer yet', '#ffc65c', $('serveBtn')); return; }
   const t=state.tray, c=state.cust, o=c.order; if(!t.items.length) return;
   if(c.ask){ toast('They are pre-ordering. Tap Accept or No thanks','#ffc65c',$('serveBtn')); return; }
+  if(c.rush){ toast('Out of stock: tap Rush buy or Sorry, sold out','#ffc65c',$('serveBtn')); return; }
   const notes=[]; let stars=5;
   const req=orderItems(o), need=orderQty(o);
   let used=[], pay=0;
@@ -2927,7 +2983,7 @@ const HOWTO = [
   {big:'🏠',h:'Rent & your own grill',p:'You start on a rented 2-slot grill (₱8 a day, rising ₱4 a week from week 3). Buy your Own Grill (3 slots, then Bigger Grill for 4) and move to a market spot with cheaper rent (₱5, rising ₱2 a week after 3 weeks). Customers never order more than your grill holds.'},
   {big:'🧾',h:'Nightly bills',p:'Every night you pay rent and charcoal (₱4, ₱6 or ₱8 depending on grill size). Every Sunday you pay the barangay permit: ₱35 at first, +₱5 every 2 weeks. Sir Rodel from the Barangay Hall explains it on Day 5 and inspects every Monday from Day 15. The Day Report shows it all as an income statement.'},
   {big:'🥫',h:'Sauces & packaging',p:'Spiced Vinegar and On a Stick are free to customers. Buy Sweet Sauce (+₱2), Sweet & Spicy (+₱3), Cup (+₱2) and Paper Plate (+₱3) in the Shop. From Day 8 each bottle or sleeve serves 20 orders: refill before the day and you only pay for what is missing.'},
-  {big:'📦',h:'Stock & demand (Day 8+)',p:'Before each day, buy food in packs of 5. Prices change daily. Storage starts at 6 packs (up to 22). Stock stays fresh 2 days (longer with a Cooler). Cheap foods sell to more people; pricey ones earn more per stick. Running out = lost sale and a 1★ review.'},
+  {big:'📦',h:'Stock & demand (Day 8+)',p:'Before each day, buy food in packs of 5. Prices change daily. Storage starts at 6 packs (up to 22). Stock stays fresh 2 days (longer with a Cooler). Cheap foods sell to more people; pricey ones earn more per stick. Running out = lost sale and a 1★ review, unless you rush-buy a pack on the spot at double price.'},
   {big:'📅',h:'Pre-orders',p:'Sometimes a customer orders for a future day, like 3 Pork BBQ + 3 Isaw on Sunday. Accept it, then make sure you have the stock that day. Get it right for a bonus tip; miss it and they leave unhappy.'},
   {big:'🧒',h:'Customer types',p:'Kids and students buy cheap items in small amounts. Workers buy a bit of everything. Rich folks buy the pricey items and tip big. Each type rates you separately; after week 1, the type that rates you highest visits more.'},
   {big:'⭐',h:'Overall rating',p:'Your average rating over the last 3 days. 5 to 9 customers come each day; at ★4.5+ you get 1 extra (up to 10) and better tips. Under ★3.0 tips drop and customers get impatient.'},
@@ -2974,7 +3030,7 @@ function loop(now){
     if(smokeAcc>.35) smokeAcc=0;
     sfx.sizzle(cooking);
     if(state.cust){
-      if(state.tutorial===0 && !state.cust.ask){
+      if(state.tutorial===0 && !state.cust.ask && !state.cust.rush){
         state.cust.left-=dt;
         const pct=Math.max(0,state.cust.left/state.cust.patience), bar=$('patBar');
         if(bar){ bar.style.width=(pct*100)+'%'; bar.style.background= pct>.5?'#46d39a':pct>.25?'#ffc65c':'#ff5a6a'; }
