@@ -406,6 +406,16 @@ tfoot td{background:var(--card2);border-top:2px solid var(--line)}
 .bubble .want{margin:.1em 0 .25em}
 .bubble.sb.nar{background:#2c2141;color:#fff6ea;border:1px solid rgba(255,255,255,.15)}.bubble.sb.nar:before{display:none}
 .bubble.sb.nar .sbTxt{font-style:italic;font-weight:600}.bubble.sb.nar .sbLang{background:#3d2c5c;color:#c9bad8}
+/* pre-order ask bubble: same text size as other customers, never wider/taller than the scene */
+.bubble.ask,.bubble.cmp{font-size:clamp(13px,5.6cqh,24px);left:min(calc(4% + 50cqh), 38%);max-height:calc(100% - 7%);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.bubble.ask .name,.bubble.cmp .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bubble.ask .want,.bubble.cmp .want{font-size:1em}
+.bubble.ask .want svg,.bubble.cmp .want svg{height:2em}
+.scene.stand .bubble.cmp{max-height:calc(100% - 46px)}
+.bubble.ask .askBtns{display:flex;gap:6px;margin-top:.45em;position:sticky;bottom:-1px;background:#fff8ee;padding-top:2px}
+.bubble.ask .askBtns .buy{flex:1;min-width:0;padding:.45em .5em;font-size:max(12px,.66em);white-space:normal;line-height:1.1}
+.bubble.ask .askBtns .buy.no{background:#efe2d0;color:#6b4a35}
+.scene.stand .bubble.ask{max-height:calc(100% - 46px)}
 /* ---------- music controls ---------- */
 .volRow{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:18px;background:var(--card2);font-weight:800;font-size:clamp(16px,calc(var(--dvh,1vh)*2),20px);box-shadow:var(--shadow)}
 .volRow input{flex:1;min-width:0;accent-color:var(--gold);height:30px}
@@ -1582,14 +1592,15 @@ function renderCustomer(tut){
   if(c.ask){
     const A=c.ask;
     $('bubble').innerHTML = `<div class="name">${c.name} · 📅 Pre-order</div>
-      <div style="font-weight:800;margin:2px 0 4px">"I'll come back on ${weekdayLong(A.day)} (Day ${A.day}). Can you have this ready?"</div>
+      <div class="say">“I'll come back on ${weekdayLong(A.day)} (Day ${A.day}). Can you have this ready?”</div>
       ${A.items.map(r=>`<div class="want">${skewerSVG(r.k,1)}<span>${r.qty} × ${PRODUCTS[r.k].name}</span></div>`).join('')}${chips}
-      <div style="display:flex;gap:8px;margin-top:8px"><button class="buy" style="flex:1" onclick="answerAsk(true)">✔ Accept</button><button class="buy" style="flex:1;background:var(--card2);color:var(--muted)" onclick="answerAsk(false)">No thanks</button></div>`;
+      <div class="askBtns"><button class="buy" onclick="answerAsk(true)">✔ Accept</button><button class="buy no" onclick="answerAsk(false)">No thanks</button></div>`;
   } else {
     $('bubble').innerHTML = `<div class="name">${c.gov?'🏛️':CTYPES[c.t]?.em||''} ${c.name}${c.resv?' · 📅 Pre-order pickup':''}</div>${c.say?`<div class="say">“${c.say}”</div>`:''}${wants}${chips}
       ${tut?'':'<div class="patience"><i id="patBar"></i></div>'}`;
   }
-  setTimeout(()=>{ if(state.cust) $('bubble').className='bubble'; },350);
+  const busy = c.ask || c.say || orderItems(o).length>1 || o.top || o.drink;   // lots to show: use the compact bubble
+  setTimeout(()=>{ if(state.cust) $('bubble').className='bubble'+(c.ask?' ask':busy?' cmp':''); },350);
 }
 function weekdayLong(d){ return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][(d-1)%7]; }
 function answerAsk(yes){
