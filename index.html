@@ -489,6 +489,51 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
   #title .logo br{display:none}#title .logo{font-size:clamp(34px,11vh,60px)}
   #title .sub{margin:2px 14px 8px}
 }
+/* v3 selling screen: food buttons wrap into rows (no sideways scrolling); the more you unlock,
+   the smaller the customer window and speech bubble get so everything fits */
+.row.raw,.row.raw.many{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible}
+.row.raw.one{grid-template-columns:1fr}
+.row.raw .tile,.row.raw.many .tile{flex:none;min-width:0}
+.ctrl.dense .rowLbl{display:none}
+.ctrl.dense{gap:5px}
+.ctrl.dense .row{gap:6px}
+.ctrl.dense .row.raw .tile{min-height:calc(var(--tileH)*.74);flex-direction:column;gap:1px;padding:4px 3px;border-radius:12px;text-align:center}
+.ctrl.dense .row.raw .tile .tx{align-items:center}
+.ctrl.dense .row.raw .tile svg{height:calc(var(--ic)*.8)}
+.ctrl.dense .row.raw .tile b{font-size:calc(var(--tileFs)*.8);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ctrl.dense .row.raw .tile small{font-size:calc(var(--tileFs)*.62);margin-top:0}
+.ctrl.dense .row.r3,.ctrl.dense .row.r2{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column}
+.ctrl.dense #rowSauce .tile,.ctrl.dense #rowTop .tile,.ctrl.dense #rowPack .tile{min-height:calc(var(--tileH)*.52);gap:5px;padding:3px 6px}
+.ctrl.dense #rowSauce .tile b,.ctrl.dense #rowTop .tile b,.ctrl.dense #rowPack .tile b{font-size:calc(var(--tileFs)*.7)}
+.ctrl.dense #rowSauce .tile small,.ctrl.dense #rowTop .tile small,.ctrl.dense #rowPack .tile small{font-size:calc(var(--tileFs)*.55)}
+.ctrl.dense #rowSauce .tile .sw,.ctrl.dense #rowTop .tile .em,.ctrl.dense #rowPack .tile .em{width:16px;height:16px;font-size:15px;line-height:16px}
+.ctrl.dense .prepRow{min-height:calc(var(--tileH)*.72)}
+#game.dense .scene{min-height:clamp(130px,calc(var(--dvh,1vh)*24),300px)}
+#game.dense .slot{height:clamp(76px,calc(var(--dvh,1vh)*10.5),126px)}
+#game.dense2 .scene{min-height:clamp(118px,calc(var(--dvh,1vh)*19),260px)}
+#game.dense2 .slot{height:clamp(70px,calc(var(--dvh,1vh)*9.5),116px)}
+#game.dense2 .grillWrap{padding-top:9px}
+#game.dense .bubble{font-size:clamp(13px,6.6cqh,28px);padding:clamp(8px,3.4cqh,20px) clamp(10px,4.4cqh,24px)}
+#game.dense .bubble.ask,#game.dense .bubble.cmp{font-size:clamp(12px,5.2cqh,22px)}
+#game.dense .bubble.sb{font-size:clamp(12px,5.6cqh,22px)}
+@media (max-width:560px){
+  .ctrl.dense .row.raw .tile b{font-size:12.5px}
+  .ctrl.dense .row.raw .tile small{font-size:10px}
+  .ctrl.dense .row.raw .tile svg{height:22px}
+  .ctrl.dense #rowSauce .tile,.ctrl.dense #rowTop .tile,.ctrl.dense #rowPack .tile{flex-direction:column;gap:1px;padding:3px 2px;text-align:center}
+  .ctrl.dense #rowSauce .tile .tx,.ctrl.dense #rowTop .tile .tx,.ctrl.dense #rowPack .tile .tx{align-items:center}
+  .ctrl.dense #rowSauce .tile b,.ctrl.dense #rowTop .tile b,.ctrl.dense #rowPack .tile b{font-size:11.5px}
+  .ctrl.dense #rowSauce .tile small,.ctrl.dense #rowTop .tile small,.ctrl.dense #rowPack .tile small{font-size:9.5px}
+}
+@media (max-height:700px) and (orientation:portrait){
+  .ctrl.dense .row.raw .tile{min-height:44px;padding:3px 2px}
+  .ctrl.dense .row.raw .tile svg{height:17px}
+  .ctrl.dense #rowSauce .tile,.ctrl.dense #rowTop .tile,.ctrl.dense #rowPack .tile{min-height:38px}
+  #game.dense2 .slot{height:66px}
+  .ctrl.dense{gap:4px;padding-top:5px}
+}
+/* phone landscape keeps its side-by-side layout: the button panel scrolls on its own */
+@media (orientation:landscape) and (max-height:560px){ #game.dense .scene,#game.dense2 .scene{min-height:110px} }
 </style>
 </head>
 <body>
@@ -710,7 +755,9 @@ const PACKS = {
 const UPGRADES = {
   grill:  {name:'Own Grill', em:'🔥', desc:'Stop renting: your own 3-slot grill, moved to a cheaper market spot', prices:[200,200],
            names:['Own Grill','Bigger Grill'], descs:['Stop renting: your own 3-slot grill, moved to a cheaper market spot','Grill holds 4 (max)']},
-  storage:{name:'Storage Box',  em:'📦', desc:'+2 storage slots (max 12)', prices:[100,180,260], needDay:8},
+  storage:{name:'Storage Box',  em:'📦', desc:'+2 storage slots (max 22)', prices:[100,180,260,360,480,620,780,960], needDay:8},
+  tongs:  {name:'Grill Fan',    em:'🌬️', desc:'Green (perfect) zone lasts longer, so fewer burnt skewers', prices:[120,250,400], needDay:5,
+           names:['Grill Fan','Bamboo Rack','Steel Rack'], descs:['Green zone lasts 30% longer','Green zone lasts 60% longer','Green zone lasts 90% longer (max)']},
   cooler: {name:'Cooler',       em:'🧊', desc:'Stock stays fresh 1 day longer', prices:[150,300], needDay:21, names:['Cooler','Big Cooler']},
   coals:  {name:'Hotter Coals', em:'♨️', desc:'Food cooks 15% faster', prices:[100,200]},
   palamig:{name:'Palamig Stand', em:'🥥', desc:'Sell buko juice on the side: small cup ₱5, big cup ₱10. A full refill (10 small + 10 big) is ₱80', prices:[200], needDay:40},
@@ -749,7 +796,8 @@ const WEEKDAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const weekday = d => WEEKDAYS[(d-1)%7];
 const isPermitDay = d => d%7===0;      // every Sunday
 const INV_DAY = 8, PACK_SIZE = 5, MERCHANT_DAY = 14;   // inventory starts Day 8; 1 storage slot = 1 pack of 5 sticks
-const PERFECT_FROM = 0.85, PERFECT_TO = 1.35, MAX_COOK = 2.0;
+const PERFECT_FROM = 0.85, PERFECT_TO_BASE = 1.35, MAX_COOK = 2.0;
+const perfTo = () => PERFECT_TO_BASE + .15*(save?.up?.tongs||0);   // Grill Fan upgrade: green zone 0.50 wide, +0.15 per level (max 1.80)
 const NAMES = ['Aling Nena','Mang Tonyo','Jun-Jun','Bea','Kuya Ramil','Tita Lorna','Paolo','Mika','Lolo Ben','Carla','Dodong','Ate Joy','Marco','Ines','Rina','Boyet'];
 const $ = id=>document.getElementById(id);
 const peso = n=>'₱'+Math.round(n).toLocaleString();
@@ -758,7 +806,7 @@ const peso = n=>'₱'+Math.round(n).toLocaleString();
    SAVE (kept in this browser on this device)
    ========================================================= */
 const SAVE_KEY='ihaw_save_v2';
-const UP0 = ()=>({grill:0,coals:0,bench:0,sign:0,pan:0,storage:0});
+const UP0 = ()=>({grill:0,coals:0,bench:0,sign:0,pan:0,storage:0,tongs:0});
 function freshSave(){ return {day:1, cash:START_CASH, owned:STARTERS.slice(), sauces:['vinegar'], packs:['stick'], up:UP0(), stand:false, life:{days:0,profit:0}, lastDay:null, newItem:null, mid:null, history:[], hints:[], seen:{}, ach:{}, cnt:{}, achV:0, maxCash:0,
   stock:[], stockSpent:0, stockStart:null, plan:null, merchant:null, supply:{}, supplyStart:null, moveDay:null, standDay:null, fakePermit:false, resv:[], pre:{salvage:0,salvageCost:0}, shady:{score:0,log:{},recycled:{},rolls:{},tips:{},loan:null,seen:{}}, v:38}; }
 function loadSave(){ try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); if(s && s.day){ const o=Object.assign(freshSave(),s); o.up=Object.assign(UP0(),o.up); o.shady=Object.assign(freshSave().shady,o.shady);
@@ -790,7 +838,7 @@ function refill(k){
   save.cash-=c; save.refillSpent=(save.refillSpent||0)+c; save.supply[k]=supSize(k); writeSave(); sfx.buy();
 }
 function initSupply(){ supKeys().forEach(k=>{ if(save.supply[k]===undefined) save.supply[k]=supSize(k); }); }
-const storageSlots = () => 6 + 2*(save?.up.storage||0);                 // starts at 6, max 12
+const storageSlots = () => 6 + 2*(save?.up.storage||0);                 // starts at 6, max 22
 const panSlots = () => 6 + 2*(save?.up.pan||0);
 const cookSpeed = () => 1 + .15*(save?.up.coals||0) + (save?.story?.abaniko?.1:0);
 const invOn = d => (d ?? save?.day ?? 1) >= INV_DAY;
@@ -1242,8 +1290,8 @@ function mix(a,b,t){
 function cookColor(p, cook){
   if(cook<=0) return p.raw;
   if(cook<1) return mix(p.raw,p.done,cook);
-  if(cook<PERFECT_TO) return p.done;
-  return mix(p.done,'#1a1210',Math.min(1,(cook-PERFECT_TO)/(MAX_COOK-PERFECT_TO)));
+  if(cook<perfTo()) return p.done;
+  return mix(p.done,'#1a1210',Math.min(1,(cook-perfTo())/(MAX_COOK-perfTo())));
 }
 function skewerSVG(key, cook=1){
   const p=PRODUCTS[key], c=cookColor(p,cook), st='#1a0e0a';
@@ -1384,6 +1432,11 @@ function renderRows(){
   }
   $('rowRaw').classList.toggle('one', tk);
   $('rowRaw').classList.toggle('many', !tk && owned.length>4);
+  // the more there is to pick from, the more compact the screen gets (customer window shrinks)
+  const nX = (tk?0:save.sauces.length+save.packs.length) + (!tk && save.up.palamig ? Object.keys(DRINKS).length : 0);
+  const lvl = tk ? 0 : (owned.length>4 || nX>5) ? ((owned.length>4 && nX>=6) || nX>=8 ? 2 : 1) : 0;
+  document.querySelector('.ctrl').classList.toggle('dense', lvl>0);
+  $('game').classList.toggle('dense', lvl>0); $('game').classList.toggle('dense2', lvl>1);
   const pick=(o,keys)=>Object.fromEntries(Object.entries(o).filter(([k])=>keys.includes(k)));
   const SA = tk?TAKO_SAUCES:pick(SAUCES,save.sauces), PA = tk?TAKO_PACKS:pick(PACKS,save.packs);
   $('rowSauce').innerHTML = Object.entries(SA).map(([k,s])=>`<button class="tile" data-sauce="${k}" onclick="pickSauce('${k}')"><span class="sw" style="background:${s.color}"></span><span class="tx"><b>${s.name}</b>${supTag(k,s)}</span></button>`).join('');
@@ -1665,7 +1718,7 @@ function placeSkewer(k){
   if(state.tutorial===2) tutorialStep(3);
 }
 function cookLevel(s){ return s.t / PRODUCTS[s.k].cook; }
-function quality(c){ return c<PERFECT_FROM?'raw':c<=PERFECT_TO?'perfect':'burnt'; }
+function quality(c){ return c<PERFECT_FROM?'raw':c<=perfTo()?'perfect':'burnt'; }
 function takeSkewer(i){
   if(state.paused||state.over) return;
   const s=state.slots[i]; if(!s) return;
@@ -1679,7 +1732,7 @@ function takeSkewer(i){
 function renderSlot(i){
   const el=$('slot'+i), s=state.slots[i];
   if(!s){ el.innerHTML='<div class="empty"></div>'; el.classList.remove('perfectGlow'); return; }
-  const z0=PERFECT_FROM/MAX_COOK*100, z1=PERFECT_TO/MAX_COOK*100;
+  const z0=PERFECT_FROM/MAX_COOK*100, z1=perfTo()/MAX_COOK*100;
   el.innerHTML = `<span class="lbl raw">COOKING</span>${skewerSVG(s.k,0)}<div class="cookbar"><div class="fill"></div><div class="zone" style="left:${z0}%;width:${z1-z0}%"></div><div class="mark"></div></div>`;
 }
 function renderAllSlots(){ state.slots.forEach((_,i)=>renderSlot(i)); }
@@ -1722,7 +1775,7 @@ function tapHole(i){
 function renderHole(i){
   const el=$('hole'+i), s=state.pan[i]; if(!el) return;
   if(!s){ el.innerHTML='<div class="empty">+</div>'; el.classList.remove('perfectGlow'); return; }
-  const z0=PERFECT_FROM/MAX_COOK*100, z1=PERFECT_TO/MAX_COOK*100;
+  const z0=PERFECT_FROM/MAX_COOK*100, z1=perfTo()/MAX_COOK*100;
   el.innerHTML=`<span class="lbl raw">COOKING</span>${ballSVG(0,false)}<div class="cookbar"><div class="fill"></div><div class="zone" style="left:${z0}%;width:${z1-z0}%"></div><div class="mark"></div></div>`;
 }
 function renderPan(){ state.pan.forEach((_,i)=>renderHole(i)); }
@@ -1925,6 +1978,7 @@ function hintText(h){
     cooler:`Stock now stays fresh for ${shelfDays()} days.`,
     palamig:`Palamig Stand! Some customers now add a small (₱5) or big (₱10) buko juice. Tap the right cup in the Palamig row before you serve. Refill the container on the Stock screen (₱80 when empty).`,
     storage:`You can now keep ${storageSlots()} packs of stock.`,
+    tongs:'The green zone on the cook bar is now longer, so you have more time before food burns.',
     coals:'The green zone arrives sooner now, so watch your skewers!',
     bench:'Fewer customers will walk away.',
     sign:'Happy customers tip more.',
@@ -2873,7 +2927,7 @@ const HOWTO = [
   {big:'🏠',h:'Rent & your own grill',p:'You start on a rented 2-slot grill (₱8 a day, rising ₱4 a week from week 3). Buy your Own Grill (3 slots, then Bigger Grill for 4) and move to a market spot with cheaper rent (₱5, rising ₱2 a week after 3 weeks). Customers never order more than your grill holds.'},
   {big:'🧾',h:'Nightly bills',p:'Every night you pay rent and charcoal (₱4, ₱6 or ₱8 depending on grill size). Every Sunday you pay the barangay permit: ₱35 at first, +₱5 every 2 weeks. Sir Rodel from the Barangay Hall explains it on Day 5 and inspects every Monday from Day 15. The Day Report shows it all as an income statement.'},
   {big:'🥫',h:'Sauces & packaging',p:'Spiced Vinegar and On a Stick are free to customers. Buy Sweet Sauce (+₱2), Sweet & Spicy (+₱3), Cup (+₱2) and Paper Plate (+₱3) in the Shop. From Day 8 each bottle or sleeve serves 20 orders: refill before the day and you only pay for what is missing.'},
-  {big:'📦',h:'Stock & demand (Day 8+)',p:'Before each day, buy food in packs of 5. Prices change daily. Storage starts at 6 packs (up to 12). Stock stays fresh 2 days (longer with a Cooler). Cheap foods sell to more people; pricey ones earn more per stick. Running out = lost sale and a 1★ review.'},
+  {big:'📦',h:'Stock & demand (Day 8+)',p:'Before each day, buy food in packs of 5. Prices change daily. Storage starts at 6 packs (up to 22). Stock stays fresh 2 days (longer with a Cooler). Cheap foods sell to more people; pricey ones earn more per stick. Running out = lost sale and a 1★ review.'},
   {big:'📅',h:'Pre-orders',p:'Sometimes a customer orders for a future day, like 3 Pork BBQ + 3 Isaw on Sunday. Accept it, then make sure you have the stock that day. Get it right for a bonus tip; miss it and they leave unhappy.'},
   {big:'🧒',h:'Customer types',p:'Kids and students buy cheap items in small amounts. Workers buy a bit of everything. Rich folks buy the pricey items and tip big. Each type rates you separately; after week 1, the type that rates you highest visits more.'},
   {big:'⭐',h:'Overall rating',p:'Your average rating over the last 3 days. 5 to 9 customers come each day; at ★4.5+ you get 1 extra (up to 10) and better tips. Under ★3.0 tips drop and customers get impatient.'},
