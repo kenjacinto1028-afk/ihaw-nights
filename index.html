@@ -3092,8 +3092,15 @@ renderTitle();
 document.addEventListener('visibilitychange',()=>{ if(document.hidden && nav.hist[nav.idx]==='game') openPause(); });
 window.addEventListener('pagehide',()=>{ if(document.querySelector('.screen.active')?.id==='game') saveMid(); });
 </script>
+<div id="appVer" style="position:fixed;right:8px;bottom:6px;font:700 11px/1 Nunito,sans-serif;color:rgba(255,255,255,.4);z-index:5;pointer-events:none"></div>
 <script>
-if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){ addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+(function(){
+  var v=document.getElementById('appVer'); v.textContent='Version Nov 25';
+  setInterval(function(){ var t=document.getElementById('title'); v.style.display=(t&&t.classList.contains('active'))?'':'none'; },500);
+  if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
+    addEventListener('load',function(){ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){ r.update(); }).catch(function(){}); });
+  }
+})();
 </script>
 </body>
 </html>
