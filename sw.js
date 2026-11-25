@@ -1,6 +1,6 @@
 /* Ihaw Nights offline cache. The version below changes automatically whenever the game changes.
    The game page itself is fetched fresh when online (saved copy is used offline), so phones get updates right away. */
-const VERSION='ihaw-b286bb9ba4';
+const VERSION='ihaw-41d637a234';
 const FILES=["./", "index.html", "manifest.webmanifest", "fonts.css", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "fonts/Baloo2.woff2", "fonts/Nunito.woff2"];
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(VERSION).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });

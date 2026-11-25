@@ -221,6 +221,16 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 .sheet{background:var(--panel);border-radius:26px;padding:24px;width:min(420px,100%);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;text-align:center}
 .sheet h3{margin:0 0 4px;font-size:26px}
 .sheet p{margin:0 0 6px;color:var(--muted);font-size:17px}
+/* phone landscape: menus and pop-ups go 2 columns and smaller so they fit the short screen */
+@media (orientation:landscape) and (max-height:560px){
+  .modal{padding:8px}
+  .sheet{max-height:calc(100% - 4px);overflow:auto;padding:14px 18px;gap:8px}
+  .sheet h3{font-size:21px}.sheet p{font-size:14px}
+  .sheet .btn{padding:10px 14px;font-size:16px;border-radius:14px}
+  #pauseModal .sheet{width:min(640px,100%);display:grid;grid-template-columns:1fr 1fr}
+  #pauseModal .sheet>h3,#pauseModal .sheet>p,#pauseModal .sheet>.btn.primary{grid-column:1/-1}
+  #pauseModal .volRow{padding:8px 14px;font-size:15px}
+}
 
 /* app tabs + overview */
 .apptabs{display:flex;gap:6px;padding:0 14px 10px;width:100%;max-width:1100px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
@@ -319,6 +329,7 @@ td.num,th.num{text-align:right}
 .sh-warn{color:#c9a0ff;font-size:13px;margin-top:6px}
 .sh-btn{background:linear-gradient(135deg,#9b5de5,#6d3bd1)!important;color:#fff!important;margin:4px 4px 0 0}
 .sh-btn:disabled{background:var(--card2)!important;color:var(--muted)!important}
+.bert{width:100%;border-collapse:collapse;margin-top:4px;font-size:13px}.bert th{font-size:11px;color:var(--muted);text-align:left;font-weight:800;padding:2px 4px}.bert th.num,.bert td.num{text-align:right;white-space:nowrap}.bert td{padding:5px 4px;border-top:1px solid rgba(255,255,255,.08);vertical-align:top}.bert td .sub{font-size:11px;margin:0}
 .bubble .say{font-style:italic;font-weight:700;font-size:.82em;opacity:.85;margin:2px 0 4px;line-height:1.25}
 .quoteTxt{font-size:clamp(15px,calc(var(--dvh,1vh)*2.2),20px)!important;color:#fff;background:rgba(20,12,30,.8);padding:6px 12px;border-radius:12px;width:max-content;max-width:86%;white-space:normal!important;text-align:center;animation:quoteUp 2.6s ease-out forwards!important}
 @keyframes quoteUp{0%{opacity:0;transform:translate(-50%,8px)}10%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
@@ -535,6 +546,18 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 }
 /* phone landscape keeps its side-by-side layout: the button panel scrolls on its own */
 @media (orientation:landscape) and (max-height:560px){ #game.dense .scene,#game.dense2 .scene{min-height:110px} }
+/* phone landscape v2: customer + grill on the left, buttons on the right; bigger, easy-to-read speech bubble */
+@media (orientation:landscape) and (max-height:560px){
+  #game .scene{min-height:0}
+  #game .slot,#game.dense .slot,#game.dense2 .slot{height:clamp(62px,calc(var(--dvh,1vh)*17),88px)}
+  #game .grillWrap{padding:8px 10px 4px}
+  #game .customer{left:1%;max-width:27%;height:86%}
+  #game .bubble,#game.dense .bubble{left:27%;right:2%;top:4%;max-width:none;max-height:92%;overflow-y:auto;overflow-x:hidden;
+    font-size:clamp(14px,calc(var(--dvh,1vh)*4.1),18px);padding:9px 13px;border-radius:18px}
+  #game .bubble.ask,#game .bubble.cmp,#game.dense .bubble.ask,#game.dense .bubble.cmp{left:25%;font-size:clamp(13.5px,calc(var(--dvh,1vh)*3.8),17px)}
+  #game .bubble.sb,#game.dense .bubble.sb{left:25%;font-size:clamp(14px,calc(var(--dvh,1vh)*4.1),18px)}
+  #game .bubble .want svg{height:1.7em}
+}
 /* v4 (portrait phones): buttons get most of the screen, customer window is a fixed smaller strip */
 @media (orientation:portrait) and (max-width:820px){
   #game .leftCol{flex:none}
@@ -596,6 +619,18 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 .scene.stand .bubble.ask{max-height:calc(100% - 62px)}
 @media (orientation:portrait) and (max-width:820px){
   #game.asking .scene,#game.asking.dense .scene,#game.asking.dense2 .scene{height:clamp(215px,calc(var(--dvh,1vh)*37),400px)}
+}
+/* phone landscape: slim top bar and tabs so menus show more of their lists */
+@media (orientation:landscape) and (max-height:560px){
+  .topnav{padding:4px 14px;padding-top:max(4px,env(safe-area-inset-top));gap:8px}
+  .topnav .navbtn{width:36px;height:36px;font-size:20px;border-radius:12px}
+  .topnav h2{font-size:19px}
+  .apptabs{padding:0 14px 6px;gap:5px}
+  .apptabs button{flex-direction:row;justify-content:center;gap:6px;padding:5px 4px;border-radius:11px;font-size:12.5px}
+  .apptabs button .ic{font-size:16px}
+  .apptabs .dot{top:3px;right:4px;width:7px;height:7px}
+  .tabs{padding:3px;border-radius:14px;margin-bottom:8px}
+  .tabs button{padding:6px 8px;font-size:14.5px;border-radius:11px}
 }
 </style>
 </head>
@@ -756,6 +791,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
     <button class="btn" onclick="toggleMusic()"><span class="musLbl"></span></button>
     <label class="volRow">🎚️ Music volume <input type="range" class="musVol" min="0" max="100" step="5" oninput="setMusVol(this.value)"></label>
     <button class="btn vibeBtn" onclick="toggleVibe()"><span class="vibeLbl"></span></button>
+    <button class="btn" onclick="cycleOrient()"><span class="oriLbl"></span></button>
     <button class="btn" id="pauseLang" onclick="setLang(LANG()==='fil'?'en':'fil');this.textContent=langLbl()">🗣️ Dialogue language</button>
     <button class="btn" onclick="closePause(true);nav.go('hub')">💾 Save &amp; Leave Day</button>
     <button class="btn ghost" onclick="closePause(true);confirmBox('Restart this day?','Sales so far today are lost and the day starts over.','Yes, restart',()=>startDay(true))">↻ Restart Day</button>
@@ -1266,6 +1302,20 @@ function syncVibe(){
   document.querySelectorAll('.vibeLbl').forEach(e=>e.textContent = buzz.on?'📳 Vibration On':'📴 Vibration Off');
 }
 function toggleVibe(){ buzz.toggle(); syncVibe(); sfx.tap(); }
+/* screen turning: Auto (follows the phone), or locked Portrait / Landscape. Locking works in the installed app on Android;
+   where the phone refuses (iPhone, or a normal browser tab), the game still fits either way you hold it. */
+const ORI=['auto','portrait','landscape'], ORI_LBL={auto:'🔄 Screen: Auto',portrait:'📱 Screen: Portrait',landscape:'📺 Screen: Landscape'};
+const oriGet=()=>{ const v=localStorage.getItem('ihaw_orient'); return ORI.includes(v)?v:'auto'; };
+function syncOrient(){ document.querySelectorAll('.oriLbl').forEach(e=>e.textContent=ORI_LBL[oriGet()]); }
+function applyOrient(tell){
+  const v=oriGet(), so=screen.orientation;
+  const why=()=>confirmBox('Turn your phone','This phone or browser doesn\'t let the game lock the screen. Just turn on auto-rotate and hold your phone '+(v==='landscape'?'sideways':'upright')+'. The game fits both ways. (Locking works in the installed app on Android.)','OK',()=>{});
+  if(!so || !so.lock){ if(tell && v!=='auto') why(); return; }
+  if(v==='auto'){ try{ so.unlock(); }catch(e){} return; }
+  so.lock(v).catch(()=>{ if(tell) why(); });
+}
+function cycleOrient(){ localStorage.setItem('ihaw_orient', ORI[(ORI.indexOf(oriGet())+1)%3]); syncOrient(); applyOrient(true); sfx.tap(); }
+addEventListener('pointerdown',function f(){ removeEventListener('pointerdown',f); applyOrient(false); });
 
 /* =========================================================
    EFFECTS: confetti, flying coins, sparks (one light canvas, capped so phones stay smooth)
@@ -2221,6 +2271,7 @@ function renderTitle(){
     <button class="btn ghost" onclick="toggleMute()"><span class="muteLbl"></span></button>
     <button class="btn ghost" onclick="toggleMusic()"><span class="musLbl"></span></button>
     <button class="btn ghost vibeBtn" onclick="toggleVibe()"><span class="vibeLbl"></span></button>
+    <button class="btn ghost" onclick="cycleOrient()"><span class="oriLbl"></span></button>
     <label class="volRow ghost">🎚️ Music volume <input type="range" class="musVol" min="0" max="100" step="5" oninput="setMusVol(this.value)"></label>` : `
     <button class="btn primary" onclick="save=freshSave();writeSave();nav.go('hub')">▶ New Game</button>
     <button class="btn" onclick="nav.go('howto')">📖 How to Play</button>
@@ -2228,8 +2279,9 @@ function renderTitle(){
     <button class="btn ghost" onclick="toggleMute()"><span class="muteLbl"></span></button>
     <button class="btn ghost" onclick="toggleMusic()"><span class="musLbl"></span></button>
     <button class="btn ghost vibeBtn" onclick="toggleVibe()"><span class="vibeLbl"></span></button>
+    <button class="btn ghost" onclick="cycleOrient()"><span class="oriLbl"></span></button>
     <label class="volRow ghost">🎚️ Music volume <input type="range" class="musVol" min="0" max="100" step="5" oninput="setMusVol(this.value)"></label>`;
-  syncMute(); syncVibe(); syncMusic();
+  syncMute(); syncVibe(); syncMusic(); syncOrient();
 }
 function newGame(){
   confirmBox('Start over?','This erases your saved money, menu items and upgrades.','Yes, start over',()=>{
@@ -2663,10 +2715,11 @@ function recycleSauce(k){
   save.shady.recycled[k]=(save.shady.recycled[k]||0)+miss; save.supply[k]=SUPPLY_SIZE;
   shadyDeal('recycle', saved); sfx.tap(); toast(`Saved ${peso(saved)}… hehe`,'#c9a0ff',$('mkCash')); renderMarket();
 }
-function sellToBuyer(){
-  const lots=oldLots(); if(!lots.length) return;
+function expLots(){ return oldLots().filter(l=>save.day>=freshUntil(l)); }   // packs on their last day: they spoil tonight
+function sellToBuyer(mode){
+  const lots=mode==='exp'?expLots():oldLots(); if(!lots.length) return;
   const cost=lots.reduce((a,l)=>a+l.left*l.paid/PACK_SIZE,0), got=Math.floor(cost*.7);
-  save.cash+=got; save.pre.salvage+=got; save.pre.salvageCost+=cost;
+  save.cash+=got; save.pre=save.pre||{salvage:0,salvageCost:0}; save.pre.salvage+=got; save.pre.salvageCost+=cost;
   save.stock=save.stock.filter(l=>!lots.includes(l));
   save.shady.uloBoost=save.day+7;                              // the stock ends up at Ulo's stall
   shadyDeal('buyer', got-Math.floor(cost*.5)); sfx.coin(); toast(`+${peso(got)}`,'#c9a0ff',$('mkCash')); renderMarket();
@@ -2722,9 +2775,14 @@ function renderEskinita(){
       has?'':`<button class="buy sh-btn" ${save.cash<20?'disabled':''} onclick="buyTip()">Pay for the tip · ₱20</button>`));
   }
   if(shadyOpen('buyer')){
-    const cost=old.reduce((a,l)=>a+l.left*l.paid/PACK_SIZE,0);
-    cards.push(card('buyer', old.length?`${old.reduce((a,l)=>a+l.left,0)} sticks bought before today. Mang Berting pays ${peso(Math.floor(cost*.7))} (Manong Jake would pay ${peso(Math.floor(cost*.5))}).`:'You have no older stock to sell right now.',
-      old.length?`<button class="buy sh-btn" onclick="sellToBuyer()">Sell to Tito Boy · +${peso(Math.floor(cost*.7))}</button>`:''));
+    const val=ls=>ls.reduce((a,l)=>a+l.left*l.paid/PACK_SIZE,0), cnt=ls=>ls.reduce((a,l)=>a+l.left,0);
+    const ex=expLots(), cAll=val(old), cEx=val(ex);
+    const body=old.length?`<table class="bert"><tr><th></th><th class="num">Sticks</th><th class="num">He pays</th><th class="num">Jake pays</th></tr>
+      <tr><td>⏳ Expiring only<div class="sub">packs on their last day (spoil tonight)</div></td><td class="num">${cnt(ex)}</td><td class="num"><b>${peso(Math.floor(cEx*.7))}</b></td><td class="num">${peso(Math.floor(cEx*.5))}</td></tr>
+      <tr><td>📦 All older stock<div class="sub">everything bought before today</div></td><td class="num">${cnt(old)}</td><td class="num"><b>${peso(Math.floor(cAll*.7))}</b></td><td class="num">${peso(Math.floor(cAll*.5))}</td></tr></table>
+      ${ex.length?'':'<div class="sub" style="margin-top:4px;font-size:12px">Nothing spoils tonight, so there is nothing "expiring" to sell.</div>'}`:'You have no older stock to sell right now.';
+    cards.push(card('buyer', body,
+      old.length?`<button class="buy sh-btn" ${ex.length?'':'disabled'} onclick="sellToBuyer('exp')">Sell expiring only · +${peso(Math.floor(cEx*.7))}</button><button class="buy sh-btn" onclick="sellToBuyer('all')">Sell all older stock · +${peso(Math.floor(cAll*.7))}</button>`:''));
   }
   if(shadyOpen('loan')){
     const L=S.loan;
@@ -3102,7 +3160,7 @@ window.addEventListener('pagehide',()=>{ if(document.querySelector('.screen.acti
 <div id="appVer" style="position:fixed;right:8px;bottom:6px;font:700 11px/1 Nunito,sans-serif;color:rgba(255,255,255,.4);z-index:5;pointer-events:none"></div>
 <script>
 (function(){
-  var v=document.getElementById('appVer'); v.textContent='vN25b';
+  var v=document.getElementById('appVer'); v.textContent='vN25c';
   setInterval(function(){ var t=document.getElementById('title'); v.style.display=(t&&t.classList.contains('active'))?'':'none'; },500);
   if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
     addEventListener('load',function(){ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){ r.update(); }).catch(function(){}); });
