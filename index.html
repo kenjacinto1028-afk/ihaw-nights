@@ -632,6 +632,26 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
   .tabs{padding:3px;border-radius:14px;margin-bottom:8px}
   .tabs button{padding:6px 8px;font-size:14.5px;border-radius:11px}
 }
+/* vN25d: speech/story/pre-order bubble always fits: starts below the Stand awning, stops above the grill,
+   scrolls inside when needed, and its buttons stay pinned at the bottom */
+#game #scene .bubble{--bt:8px;top:var(--bt);max-height:calc(100% - var(--bt) - 18px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;z-index:3}
+#game #scene.stand .bubble{--bt:46px}
+#game #scene .bubble.sb,#game #scene .bubble.ask{padding-bottom:0}
+#game #scene .bubble.sb .sbRow,#game #scene .bubble.sb .sbChs,#game #scene .bubble.ask .askBtns{position:sticky;bottom:0;z-index:1;background:inherit;padding-top:5px;padding-bottom:9px;margin-top:0}
+#game #scene .bubble.sb .sbTxt{margin-bottom:.15em}
+#game #scene .bubble.sb .sbChs .sbBtn{white-space:normal;line-height:1.15;text-align:center;padding:.4em .7em}
+#game #scene .bubble.sb.ch{display:flex;flex-direction:column}
+#game #scene .bubble.sb.ch .sbTop,#game #scene .bubble.sb.ch .sbChs{flex:none}
+#game #scene .bubble.sb.ch .sbTxt{flex:0 1 auto;min-height:2.75em;overflow-y:auto;overscroll-behavior:contain}
+#game #scene .bubble.sb.ch .sbChs{gap:.3em}
+#game #scene .bubble.sb.ch .sbChs .sbBtn{font-size:.76em;padding:.38em .6em}
+#game #scene .bubble .wants{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.6em,1fr));column-gap:.5em;margin:.1em 0 .2em}
+#game #scene .bubble .wants .want{margin:0;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#game #scene .bubble .wants .want span{overflow:hidden;text-overflow:ellipsis}
+#game #scene .bubble .wants .want svg{height:1.6em;width:1em}
+@media (orientation:portrait) and (max-width:820px){
+  #game.roomy .scene,#game.roomy.dense .scene,#game.roomy.dense2 .scene{height:clamp(215px,calc(var(--dvh,1vh)*37),400px)}
+}
 </style>
 </head>
 <body>
@@ -1774,7 +1794,7 @@ function renderCustomer(tut){
   $('cust').innerHTML = customerSVG(look);
   $('cust').className='customer out';
   requestAnimationFrame(()=>requestAnimationFrame(()=>$('cust').className='customer'));
-  const wants = orderItems(o).map(r=>`<div class="want">${skewerSVG(r.k,1)}<span>${r.qty} × ${PRODUCTS[r.k].name}</span></div>`).join('');
+  const wants = '<div class="wants">'+orderItems(o).map(r=>`<div class="want">${skewerSVG(r.k,1)}<span>${r.qty} × ${PRODUCTS[r.k].name}</span></div>`).join('')+'</div>';
   const chips = `<div class="chips"><span class="chip"><i style="background:${SAUCE_ALL[o.sauce].color}"></i>${SAUCE_ALL[o.sauce].name}</span>
     ${o.top?`<span class="chip">${TOPS[o.top].em} ${TOPS[o.top].name}</span>`:''}
     <span class="chip">${PACK_ALL[o.pack].em} ${PACK_ALL[o.pack].name}</span>${o.drink?`<span class="chip" style="background:#d7f5e4">${DRINKS[o.drink].em} ${DRINKS[o.drink].name}</span>`:''}</div>`;
@@ -1787,15 +1807,24 @@ function renderCustomer(tut){
     const A=c.ask;
     $('bubble').innerHTML = `<div class="name">${c.name} · 📅 Pre-order</div>
       <div class="say">“I'll come back on ${weekdayLong(A.day)} (Day ${A.day}). Can you have this ready?”</div>
-      ${A.items.map(r=>`<div class="want">${skewerSVG(r.k,1)}<span>${r.qty} × ${PRODUCTS[r.k].name}</span></div>`).join('')}${chips}
+      <div class="wants">${A.items.map(r=>`<div class="want">${skewerSVG(r.k,1)}<span>${r.qty} × ${PRODUCTS[r.k].name}</span></div>`).join('')}</div>${chips}
       <div class="askBtns"><button class="buy" onclick="answerAsk(true)">✔ Accept</button><button class="buy no" onclick="answerAsk(false)">No thanks</button></div>`;
   } else {
     $('bubble').innerHTML = `<div class="name">${c.gov?'🏛️':CTYPES[c.t]?.em||''} ${c.name}${c.resv?' · 📅 Pre-order pickup':''}</div>${c.say?`<div class="say">“${c.say}”</div>`:''}${wants}${chips}
       ${tut?'':'<div class="patience"><i id="patBar"></i></div>'}`;
   }
   const busy = c.ask || c.say || orderItems(o).length>1 || o.top || o.drink;   // lots to show: use the compact bubble
-  setTimeout(()=>{ if(state.cust) $('bubble').className='bubble'+(c.ask||c.rush?' ask':busy?' cmp':''); $('game').classList.toggle('asking', !!(c.ask||c.rush)); },350);
+  setTimeout(()=>{ if(state.cust) $('bubble').className='bubble'+(c.ask||c.rush?' ask':busy?' cmp':''); $('game').classList.toggle('asking', !!(c.ask||c.rush));  fitBubble(); },350);
 }
+/* vN25d: make sure the whole bubble fits: on an upright phone give the customer window more room, then shrink the text a little if still needed */
+function fitBubble(){
+  const b=$('bubble'), g=$('game'); if(!b||!g) return; b.style.fontSize='';
+  if(b.classList.contains('hide')){ g.classList.remove('roomy'); return; }
+  const over=()=>b.scrollHeight>b.clientHeight+1;
+  g.classList.remove('roomy'); if(over() && innerHeight>innerWidth) g.classList.add('roomy');
+  let fs=parseFloat(getComputedStyle(b).fontSize), n=0; while(over() && fs>11.5 && n++<14){ fs-=.5; b.style.fontSize=fs+'px'; }
+}
+addEventListener('resize',()=>setTimeout(fitBubble,200));
 function weekdayLong(d){ return ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][(d-1)%7]; }
 function answerAsk(yes){
   const c=state.cust; if(!c || !c.ask || state.paused) return;
@@ -1835,7 +1864,7 @@ function govTalk(){                                // the barangay inspector: Da
   coach(msg,'OK',()=>{ state.hintLock=false; coach(null); });
 }
 function customerLeaves(happy){
-  $('game').classList.remove('asking');
+  $('game').classList.remove('asking','roomy');
   const leaving=state.cust; if(leaving && leaving.gov) setTimeout(govTalk,600);
   $('bubble').className='bubble hide';
   setMood(happy?'happy':'sad');
@@ -2529,9 +2558,11 @@ function drawBubbleScene(L,c,last){
     <div class="say sbTxt">${fill(L.t||L)}</div>
     ${L.choices?`<div class="sbChs">${L.choices.map((ch,i)=>`<button class="sbBtn ${i?'alt':''}" onclick="sceneChoice(${i})">${fill(ch)}</button>`).join('')}</div>`
     :`<div class="sbRow"><span class="sbDots">${story.i+1}/${story.lines.length}</span><button class="sbBtn" onclick="sceneNext()">${last?(LANG()==='fil'?'Sige!':'OK!'):(LANG()==='fil'?'Tuloy ›':'Next ›')}</button></div>`}`;
-  b.className = 'bubble sb' + (L.who==='me'?' me':L.who==='nar'?' nar':'');
+  b.className = 'bubble sb' + (L.who==='me'?' me':L.who==='nar'?' nar':'') + (L.choices?' ch':'');
+  b.scrollTop=0; $('game').classList.add('asking');   // story line: give the bubble room (portrait)
+  fitBubble();
 }
-function sceneNext(){ sfx.tap(); if(story.i<story.lines.length-1){ story.i++; drawScene(); } else { $('storyModal').classList.remove('show'); if(story.ig && !state.cust){ $('cust').className='customer out'; $('bubble').className='bubble hide'; } const f=story.done; story=null; f&&f(); } }
+function sceneNext(){ sfx.tap(); if(story.i<story.lines.length-1){ story.i++; drawScene(); } else { $('storyModal').classList.remove('show'); if(story.ig && !state.cust){ $('cust').className='customer out'; $('bubble').className='bubble hide'; } if(story.ig) $('game').classList.toggle('asking', !!(state.cust&&(state.cust.ask||state.cust.rush))); const f=story.done; story=null; f&&f(); } }
 function sceneChoice(i){ const ch=story.lines[story.i].choices[i]; ch.fn&&ch.fn(); if(ch.then){ story.lines.splice(story.i+1,0,...ch.then); } sceneNext(); }
 
 /* ---------- Day 36: the Stand opens, ready or not. Nono covers any gap ---------- */
@@ -3160,7 +3191,7 @@ window.addEventListener('pagehide',()=>{ if(document.querySelector('.screen.acti
 <div id="appVer" style="position:fixed;right:8px;bottom:6px;font:700 11px/1 Nunito,sans-serif;color:rgba(255,255,255,.4);z-index:5;pointer-events:none"></div>
 <script>
 (function(){
-  var v=document.getElementById('appVer'); v.textContent='vN25c';
+  var v=document.getElementById('appVer'); v.textContent='vN25d';
   setInterval(function(){ var t=document.getElementById('title'); v.style.display=(t&&t.classList.contains('active'))?'':'none'; },500);
   if('serviceWorker' in navigator && /^https?:/.test(location.protocol)){
     addEventListener('load',function(){ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){ r.update(); }).catch(function(){}); });
